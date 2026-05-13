@@ -15,6 +15,7 @@ target/
 
 ### IntelliJ IDEA ###
 .idea
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -32,3 +33,10 @@ build/
 ### VS Code ###
 .vscode/
 .DS_Store
+Thumbs.db
+
+### Environment ###
+application-local.properties
+application-local.yml
+.env
+.env.*
