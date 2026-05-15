@@ -1,5 +1,6 @@
 # SmartVolt
 
+> Turn any EV charging off a wall outlet into a smart charger!
 > Spring Boot service that subscribes to real-time MQTT telemetry from a Sonoff S31 smart outlet, stores EV charging sessions in PostgreSQL, and publishes commands to schedule charging during off-peak TOU rate windows.
 
 > ⚠️ **Work in progress** — actively being built.
@@ -65,10 +66,9 @@ mosquitto_pub -h <broker-ip> -p 1883 -u smartvolt -P <password> \
 
 | Topic | Direction | Purpose |
 |---|---|---|
-| `smartvolt/devices/+/telemetry` | Device → Server | Power readings (QoS 0, every 10s) |
-| `smartvolt/devices/{id}/command` | Server → Device | Power on/off commands (QoS 1, retained) |
-| `smartvolt/devices/+/status` | Device → Server | Online/offline via LWT |
-
+| `smartvolt/devices/+/tele/SENSOR` | Device → Server | Power readings (QoS 0, every 10s) |
+| `smartvolt/devices/{id}/CMND` | Server → Device | Power on/off commands (QoS 1, retained) |
+| `smartvolt/devices/+/tele/LWT` | Device → Server | Devices Last Will & Testament (LWT) - last message before disconnect |
 
 
 ## Hardware
@@ -79,7 +79,7 @@ mosquitto_pub -h <broker-ip> -p 1883 -u smartvolt -P <password> \
 
 ## Roadmap
 
-- [ ] TLS on port 8883 (encrypt credentials in transit)
+- [ ] Charging analytics
 - [ ] Custom Mosquito Deploy Script for easy host deployment
 - [ ] Dynamic TOU windows
 - [ ] Charging cost dashboard

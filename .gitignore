@@ -36,7 +36,12 @@ build/
 Thumbs.db
 
 ### Environment ###
-application-local.properties
-application-local.yml
+application-dev.properties
+application-dev.yml
 .env
 .env.*
+*.pem
+*.p12
+*.key
+*.crt
+*.jks
