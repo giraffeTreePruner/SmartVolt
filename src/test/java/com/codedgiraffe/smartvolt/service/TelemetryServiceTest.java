@@ -1,0 +1,57 @@
+package com.codedgiraffe.smartvolt.service;
+
+import com.codedgiraffe.smartvolt.dto.TelemetryPayload;
+import com.codedgiraffe.smartvolt.model.Device;
+import com.codedgiraffe.smartvolt.model.TelemetryReading;
+import com.codedgiraffe.smartvolt.repository.DeviceRepository;
+import com.codedgiraffe.smartvolt.repository.TelemetryRepository;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+public class TelemetryServiceTest {
+
+    @Mock TelemetryRepository mockTeleRepo;
+    @Mock DeviceRepository mockDeviceRepo;
+    @InjectMocks TelemetryService mockTeleService;
+
+    @Test
+    void testIngestSaveKnownDevice() {
+        Device device = new Device();
+        device.setDeviceId("sonoff-01");
+        when(mockDeviceRepo.findByDeviceId("sonoff-01")).thenReturn(Optional.of(device));
+        when(mockTeleRepo.save(any())).thenReturn(new TelemetryReading());
+        TelemetryPayload payload = buildPayload(1140.0, 121.0, 9.4, 0.523);
+        mockTeleService.ingest("sonoff-01", payload);
+
+        verify(mockTeleRepo, times(1)).save(any());
+    }
+
+    @Test
+    void testIngestDropUnknownDevice() {
+        when(mockDeviceRepo.findByDeviceId("unknown-device")).thenReturn(Optional.empty());
+        TelemetryPayload payload = buildPayload(1140.0, 121.0, 9.4, 0.523);
+        mockTeleService.ingest("unknown-device", payload);
+
+        verify(mockTeleRepo, never()).save(any());
+    }
+
+    private TelemetryPayload buildPayload(Double wattage, Double voltage, Double amperage, Double totalKwh) {
+        TelemetryPayload payload = new TelemetryPayload();
+        TelemetryPayload.EnergyData energy = new TelemetryPayload.EnergyData();
+        energy.setWattage(wattage);
+        energy.setVoltage(voltage);
+        energy.setAmperage(amperage);
+        energy.setTotalKwh(totalKwh);
+        payload.setEnergy(energy);
+        return payload;
+    }
+}
