@@ -9,7 +9,7 @@ RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
 
 # Build
 COPY src/ src/
-RUN ./mwnw package -DskipTests -B
+RUN ./mvnw package -DskipTests -B
 
 # Stage 2 - Runtime
 FROM eclipse-temurin:17-jre-alpine
