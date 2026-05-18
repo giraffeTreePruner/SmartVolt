@@ -1,0 +1,39 @@
+services:
+    postgres:
+        image: postgres:17-alpine
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: smartvolt
+            POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
+            POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+        ports:
+            - "127.0.0.1:5432:5432"
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${SPRING_DATASOURCE_USERNAME} -d smartvolt"]
+        interval: 5s
+        timeout: 3s
+        retries: 5
+    
+    api:
+        build: .
+        restart: unless-stopped
+        depends_on:
+            postgres:
+                condition: service_healthy
+        env_file: .env
+        environment:
+            SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/smartvolt
+            SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+            SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+            MQTT_USERNAME: ${MQTT_USERNAME}
+            MQTT_PASSWORD: ${MQTT_PASSWORD}
+            SMARTVOLT_API_KEY: ${SMARTVOLT_API_KEY}
+        ports:
+            - "127.0.0.1:8080:8080"
+        volumes:
+            - /etc/letsencrypt:/etc/letsencrypt:ro
+
+volumes:
+    pgdata:
