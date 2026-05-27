@@ -52,7 +52,7 @@ public class TelemetryMessageHandler {
             return;
         }
 
-        // Tasmota native topic routing format
+        // ESPHome publishes on the same topic structure via mqtt.publish_json
         if (topic.endsWith("/tele/SENSOR")) {
             handleTelemetry(topic, payload);
         } else if (topic.endsWith("/tele/LWT")) {

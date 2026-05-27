@@ -10,21 +10,23 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.stereotype.Component;
 
-// TODO: accept deviceId as a parameter when multi-device support is added.
 @Component
 public class CommandPublisher {
     private static final Logger log = LoggerFactory.getLogger(CommandPublisher.class);
     private final MessageChannel mqttOutputChannel;
 
     @Value("${smartvolt.device.id}")
-    private String deviceId;
+    private String defaultDeviceId;
 
     public CommandPublisher(@Qualifier("mqttOutputChannel") MessageChannel mqttOutputChannel) {
         this.mqttOutputChannel = mqttOutputChannel;
     }
 
     public void setPower(boolean on) {
-        // Tasmota native command topic: .../cmnd/Power
+        setPower(defaultDeviceId, on);
+    }
+
+    public void setPower(String deviceId, boolean on) {
         String topic = "smartvolt/devices/" + deviceId + "/cmnd/Power";
         String payload = on ? "ON" : "OFF";
 
@@ -33,7 +35,7 @@ public class CommandPublisher {
             .setHeader(MqttHeaders.TOPIC, topic)
             .build();
 
-            mqttOutputChannel.send(message);
-            log.info("Sent power command to device {}: {}", deviceId, payload);
+        mqttOutputChannel.send(message);
+        log.info("Sent power command to device {}: {}", deviceId, payload);
     }
 }

@@ -26,12 +26,10 @@ public class TelemetryService {
         deviceRepo.findByDeviceId(deviceId).ifPresent(device -> {
             TelemetryReading reading = new TelemetryReading();
             reading.setDeviceId(deviceId);
-            if (data.getEnergy() != null) {
-                reading.setWattage(data.getEnergy().getWattage());
-                reading.setVoltage(data.getEnergy().getVoltage());
-                reading.setAmperage(data.getEnergy().getAmperage());
-                reading.setTotalKwh(data.getEnergy().getTotalKwh());
-            }
+            reading.setWattage(data.getWattage());
+            reading.setVoltage(data.getVoltage());
+            reading.setAmperage(data.getAmperage());
+            reading.setTotalKwh(data.getTotalKwh());
             telemetryRepo.save(reading);
         });
     }

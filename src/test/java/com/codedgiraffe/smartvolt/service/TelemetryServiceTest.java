@@ -26,11 +26,11 @@ public class TelemetryServiceTest {
     @Test
     void testIngestSaveKnownDevice() {
         Device device = new Device();
-        device.setDeviceId("sonoff-01");
-        when(mockDeviceRepo.findByDeviceId("sonoff-01")).thenReturn(Optional.of(device));
+        device.setDeviceId("kauf-01");
+        when(mockDeviceRepo.findByDeviceId("kauf-01")).thenReturn(Optional.of(device));
         when(mockTeleRepo.save(any())).thenReturn(new TelemetryReading());
         TelemetryPayload payload = buildPayload(1140.0, 121.0, 9.4, 0.523);
-        mockTeleService.ingest("sonoff-01", payload);
+        mockTeleService.ingest("kauf-01", payload);
 
         verify(mockTeleRepo, times(1)).save(any());
     }
@@ -46,12 +46,10 @@ public class TelemetryServiceTest {
 
     private TelemetryPayload buildPayload(Double wattage, Double voltage, Double amperage, Double totalKwh) {
         TelemetryPayload payload = new TelemetryPayload();
-        TelemetryPayload.EnergyData energy = new TelemetryPayload.EnergyData();
-        energy.setWattage(wattage);
-        energy.setVoltage(voltage);
-        energy.setAmperage(amperage);
-        energy.setTotalKwh(totalKwh);
-        payload.setEnergy(energy);
+        payload.setWattage(wattage);
+        payload.setVoltage(voltage);
+        payload.setAmperage(amperage);
+        payload.setTotalKwh(totalKwh);
         return payload;
     }
 }

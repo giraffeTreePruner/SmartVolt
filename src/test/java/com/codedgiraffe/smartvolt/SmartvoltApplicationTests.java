@@ -15,7 +15,8 @@ import org.springframework.test.context.TestPropertySource;
 	"mqtt.username=test",
 	"mqtt.password=test",
 	"mqtt.tls.ca-cert-path=",
-	"smartvolt.api.key=test-key"
+	"smartvolt.api.key=test-key",
+	"smartvolt.device.id=kauf-01"
 })
 class SmartvoltApplicationTests {
 
