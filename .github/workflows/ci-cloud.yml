@@ -35,11 +35,10 @@ jobs:
 
     env:
         SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/smartvolt
-        SPRING_DATASOURCE_USERNAME: ci_user
-        SPRING_DATASOURCE_PASSWORD: ci_password
-        MQTT_USERNAME: ""
-        MQTT_PASSWORD: ""
+        SPRING_DATASOURCE_USERNAME: smartvolt
+        SPRING_DATASOURCE_PASSWORD: pass
         SMARTVOLT_API_KEY: ci-test-key
+        DASHBOARD_PASSWORD: ci-test-pass
 
     steps:
     - name: Checkout
@@ -60,6 +59,5 @@ jobs:
           -Dspring.datasource.url=$SPRING_DATASOURCE_URL \
           -Dspring.datasource.username=$SPRING_DATASOURCE_USERNAME \
           -Dspring.datasource.password=$SPRING_DATASOURCE_PASSWORD \
-          -Dmqtt.broker.url=tcp://localhost:1883 \
-          -Dmqtt.tls.ca-cert-path= \
-          -Dsmartvolt.api.key=$SMARTVOLT_API_KEY
+          -Dsmartvolt.api.key=$SMARTVOLT_API_KEY \
+          -Dsmartvolt.dashboard.password=$DASHBOARD_PASSWORD

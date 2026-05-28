@@ -1,8 +1,9 @@
 package com.codedgiraffe.smartvolt.cloud.controller;
 
+import com.codedgiraffe.smartvolt.cloud.command.CommandService;
+import com.codedgiraffe.smartvolt.cloud.command.CommandType;
 import com.codedgiraffe.smartvolt.cloud.dto.DeviceRegistrationRequest;
 import com.codedgiraffe.smartvolt.cloud.model.Device;
-import com.codedgiraffe.smartvolt.cloud.mqtt.CommandPublisher;
 import com.codedgiraffe.smartvolt.cloud.service.DeviceService;
 
 import jakarta.validation.Valid;
@@ -18,11 +19,11 @@ import java.util.Map;
 @RequestMapping("/api/devices")
 public class DeviceController {
     private final DeviceService deviceService;
-    private final CommandPublisher commandPublisher;
+    private final CommandService commandService;
 
-    public DeviceController(DeviceService deviceService, CommandPublisher commandPublisher) {
+    public DeviceController(DeviceService deviceService, CommandService commandService) {
         this.deviceService = deviceService;
-        this.commandPublisher = commandPublisher;
+        this.commandService = commandService;
     }
 
     @PostMapping
@@ -43,7 +44,7 @@ public class DeviceController {
             @RequestParam boolean on) {
         deviceService.findByDeviceId(deviceId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
-        commandPublisher.setPower(deviceId, on);
+        commandService.createCommand(deviceId, on ? CommandType.POWER_ON : CommandType.POWER_OFF);
         return ResponseEntity.ok(Map.of(
             "deviceId", deviceId,
             "power", on ? "ON" : "OFF"));

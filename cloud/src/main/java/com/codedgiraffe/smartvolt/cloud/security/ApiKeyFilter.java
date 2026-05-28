@@ -27,26 +27,27 @@ public class ApiKeyFilter extends OncePerRequestFilter {
     private String expectedApiKey;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return !request.getRequestURI().startsWith("/api/");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
                                     throws ServletException, IOException {
-        if (request.getRequestURI().startsWith("/actuator/health")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         String key = request.getHeader("X-API-Key");
         if (key == null || !constantTimeEquals(key, expectedApiKey)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\": \"Invalid API key\"}");
-            log.info("Rejected request to {} from {} because of an invalid API key", request.getRequestURI(), request.getRemoteAddr());
+            log.info("Rejected request to {} from {} - invalid API key",
+                    request.getRequestURI(), request.getRemoteAddr());
             return;
         }
 
         UsernamePasswordAuthenticationToken auth =
-            new UsernamePasswordAuthenticationToken("client", null, List.of());
+            new UsernamePasswordAuthenticationToken("api-client", null, List.of());
         SecurityContextHolder.getContext().setAuthentication(auth);
         filterChain.doFilter(request, response);
     }

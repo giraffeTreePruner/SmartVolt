@@ -1,8 +1,10 @@
 package com.codedgiraffe.smartvolt.cloud.scheduler;
 
-import com.codedgiraffe.smartvolt.cloud.mqtt.CommandPublisher;
+import com.codedgiraffe.smartvolt.cloud.command.CommandService;
+import com.codedgiraffe.smartvolt.cloud.command.CommandType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -10,21 +12,24 @@ import org.springframework.stereotype.Component;
 public class ChargingScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(ChargingScheduler.class);
-    private final CommandPublisher commandPublisher;
+    private final CommandService commandService;
+    private final String deviceId;
 
-    public ChargingScheduler(CommandPublisher cmdPub) {
-        this.commandPublisher = cmdPub;
+    public ChargingScheduler(CommandService commandService,
+                             @Value("${smartvolt.device.id:kauf-01}") String deviceId) {
+        this.commandService = commandService;
+        this.deviceId = deviceId;
     }
 
-    @Scheduled(cron = "0 0 22 * * *") // Every day at 10pm
+    @Scheduled(cron = "0 0 22 * * *")
     public void startCharging() {
-        log.info("Starting scheduled charging session");
-        commandPublisher.setPower(true);
+        log.info("Creating scheduled POWER_ON command for device {}", deviceId);
+        commandService.createCommand(deviceId, CommandType.POWER_ON);
     }
 
-    @Scheduled(cron = "0 0 8 * * *") // Every day at 8am
+    @Scheduled(cron = "0 0 8 * * *")
     public void stopCharging() {
-        log.info("Stopping scheduled charging session");
-        commandPublisher.setPower(false);
+        log.info("Creating scheduled POWER_OFF command for device {}", deviceId);
+        commandService.createCommand(deviceId, CommandType.POWER_OFF);
     }
 }
