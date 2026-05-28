@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SmartVolt - Charging Sessions</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-brand">SmartVolt</a>
+        <div class="nav-links">
+            <a href="/dashboard">Live</a>
+            <a href="/dashboard/history">History</a>
+            <a href="/dashboard/sessions" class="active">Sessions</a>
+        </div>
+        <form th:action="@{/logout}" method="post" class="nav-logout">
+            <button type="submit" class="btn btn-sm">Logout</button>
+        </form>
+    </nav>
+
+    <main class="container">
+        <h2>Charging Sessions</h2>
+
+        <table class="data-table" th:if="${!#lists.isEmpty(sessions)}">
+            <thead>
+                <tr>
+                    <th>Device</th>
+                    <th>Started</th>
+                    <th>Ended</th>
+                    <th>Duration</th>
+                    <th>Energy (kWh)</th>
+                    <th>Est. Cost</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="cs : ${sessions}">
+                    <td th:text="${cs.deviceId}">kauf-01</td>
+                    <td th:text="${cs.startedAt != null ? #temporals.format(cs.startedAt, 'MMM d, HH:mm', 'America/Los_Angeles') : '--'}">--</td>
+                    <td th:text="${cs.endedAt != null ? #temporals.format(cs.endedAt, 'MMM d, HH:mm', 'America/Los_Angeles') : '--'}">--</td>
+                    <td th:text="${cs.endedAt != null ? T(java.time.Duration).between(cs.startedAt, cs.endedAt).toMinutes() + ' min' : 'In progress'}">--</td>
+                    <td th:text="${cs.energyUsedKwh != null ? #numbers.formatDecimal(cs.energyUsedKwh, 1, 3) : '--'}">--</td>
+                    <td th:text="${cs.estimatedCost != null ? '$' + #numbers.formatDecimal(cs.estimatedCost, 1, 2) : '--'}">--</td>
+                    <td>
+                        <span th:class="'status-badge ' + ${cs.status.name().toLowerCase()}"
+                              th:text="${cs.status}">ACTIVE</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:if="${#lists.isEmpty(sessions)}" class="no-data">
+            No charging sessions detected yet. Sessions are created automatically when wattage exceeds 100W for 3 consecutive readings.
+        </div>
+    </main>
+</body>
+</html>

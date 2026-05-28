@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SmartVolt - History</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-brand">SmartVolt</a>
+        <div class="nav-links">
+            <a href="/dashboard">Live</a>
+            <a href="/dashboard/history" class="active">History</a>
+            <a href="/dashboard/sessions">Sessions</a>
+        </div>
+        <form th:action="@{/logout}" method="post" class="nav-logout">
+            <button type="submit" class="btn btn-sm">Logout</button>
+        </form>
+    </nav>
+
+    <main class="container">
+        <h2>Telemetry History</h2>
+
+        <div class="controls-bar">
+            <div class="form-group">
+                <label for="device-select">Device</label>
+                <select id="device-select">
+                    <option th:each="device : ${devices}"
+                            th:value="${device.deviceId}"
+                            th:text="${device.name != null ? device.name : device.deviceId}">Device</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="range-select">Range</label>
+                <select id="range-select">
+                    <option value="1">Last Hour</option>
+                    <option value="6">Last 6 Hours</option>
+                    <option value="24" selected>Last 24 Hours</option>
+                    <option value="168">Last 7 Days</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="loadChart()">Load</button>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="telemetry-chart"></canvas>
+        </div>
+
+        <div th:if="${#lists.isEmpty(devices)}" class="no-data">
+            No devices registered.
+        </div>
+    </main>
+
+    <script th:inline="javascript">
+        let chart = null;
+
+        function loadChart() {
+            const deviceId = document.getElementById('device-select').value;
+            const hours = parseInt(document.getElementById('range-select').value);
+            if (!deviceId) return;
+
+            const to = new Date().toISOString();
+            const from = new Date(Date.now() - hours * 3600000).toISOString();
+
+            fetch(`/dashboard/api/history/data?deviceId=${encodeURIComponent(deviceId)}&from=${from}&to=${to}`)
+                .then(r => r.json())
+                .then(data => renderChart(data))
+                .catch(err => console.error('Failed to load chart data:', err));
+        }
+
+        function renderChart(data) {
+            const ctx = document.getElementById('telemetry-chart').getContext('2d');
+
+            if (chart) chart.destroy();
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.timestamp),
+                    datasets: [
+                        {
+                            label: 'Wattage (W)',
+                            data: data.map(d => d.wattage),
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231,76,60,0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 0,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Voltage (V)',
+                            data: data.map(d => d.voltage),
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52,152,219,0.1)',
+                            fill: false,
+                            tension: 0.3,
+                            pointRadius: 0,
+                            yAxisID: 'y1'
+                        },
+                        {
+                            label: 'Amperage (A)',
+                            data: data.map(d => d.amperage),
+                            borderColor: '#2ecc71',
+                            backgroundColor: 'rgba(46,204,113,0.1)',
+                            fill: false,
+                            tension: 0.3,
+                            pointRadius: 0,
+                            yAxisID: 'y'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: { tooltipFormat: 'MMM d, HH:mm:ss' },
+                            title: { display: true, text: 'Time' }
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'Wattage (W) / Amperage (A)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'Voltage (V)' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('device-select').value) {
+                loadChart();
+            }
+        });
+    </script>
+</body>
+</html>

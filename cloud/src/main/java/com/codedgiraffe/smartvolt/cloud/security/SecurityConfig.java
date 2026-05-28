@@ -43,7 +43,7 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain dashboardFilterChain(HttpSecurity http) throws Exception {
         http
-            .securityMatcher("/dashboard/**", "/login", "/css/**", "/js/**")
+            .securityMatcher("/dashboard/**", "/login", "/logout", "/css/**", "/js/**")
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/login", "/css/**", "/js/**").permitAll()
                 .anyRequest().authenticated())
