@@ -4,6 +4,7 @@ import com.codedgiraffe.smartvolt.cloud.model.Device;
 import com.codedgiraffe.smartvolt.cloud.model.TelemetryReading;
 import com.codedgiraffe.smartvolt.cloud.repository.DeviceRepository;
 import com.codedgiraffe.smartvolt.cloud.repository.TelemetryRepository;
+import com.codedgiraffe.smartvolt.cloud.session.ChargingSessionDetector;
 import com.codedgiraffe.smartvolt.shared.dto.TelemetryBatchRequest;
 import com.codedgiraffe.smartvolt.shared.dto.TelemetryBatchResponse;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,12 @@ class TelemetryIngestServiceTest {
 
     @Mock
     private DeviceRepository deviceRepo;
+
+    @Mock
+    private S3ArchivalService s3Archiver;
+
+    @Mock
+    private ChargingSessionDetector sessionDetector;
 
     @InjectMocks
     private TelemetryIngestService ingestService;
