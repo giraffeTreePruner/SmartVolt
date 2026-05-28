@@ -49,3 +49,9 @@ application-dev.yml
 *.key
 *.crt
 *.jks
+
+### Edge H2 buffer ###
+edge/data/
+
+### Claude ###
+.claude/*

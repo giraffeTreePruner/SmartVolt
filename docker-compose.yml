@@ -15,9 +15,11 @@ services:
             interval: 5s
             timeout: 3s
             retries: 5
-    
-    api:
-        build: .
+
+    cloud:
+        build:
+            context: .
+            dockerfile: cloud/Dockerfile
         restart: unless-stopped
         depends_on:
             postgres:
