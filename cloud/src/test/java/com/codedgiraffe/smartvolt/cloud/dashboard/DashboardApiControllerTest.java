@@ -4,9 +4,13 @@ import com.codedgiraffe.smartvolt.cloud.model.Device;
 import com.codedgiraffe.smartvolt.cloud.model.TelemetryReading;
 import com.codedgiraffe.smartvolt.cloud.repository.TelemetryRepository;
 import com.codedgiraffe.smartvolt.cloud.service.DeviceService;
+import com.codedgiraffe.smartvolt.cloud.session.ChargingSession;
+import com.codedgiraffe.smartvolt.cloud.session.ChargingSessionRepository;
+import com.codedgiraffe.smartvolt.cloud.session.SessionStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
@@ -34,6 +38,7 @@ class DashboardApiControllerTest {
 
     @MockitoBean DeviceService deviceService;
     @MockitoBean TelemetryRepository telemetryRepo;
+    @MockitoBean ChargingSessionRepository sessionRepo;
 
     @Test
     @WithMockUser
@@ -79,4 +84,28 @@ class DashboardApiControllerTest {
                 .andExpect(jsonPath("$[0].timestamp").value("2026-05-28T10:00:00Z"));
     }
 
+    @Test
+    @WithMockUser
+    void sessionTimeline_returnsJson() throws Exception {
+        Instant start = Instant.parse("2026-05-28T02:00:00Z");
+        Instant end = Instant.parse("2026-05-28T04:30:00Z");
+
+        ChargingSession cs = new ChargingSession();
+        cs.setDeviceId("kauf-01");
+        cs.setStartedAt(start);
+        cs.setEndedAt(end);
+        cs.setEnergyUsedKwh(5.2);
+        cs.setStatus(SessionStatus.COMPLETED);
+
+        when(sessionRepo.findAll(any(Sort.class))).thenReturn(List.of(cs));
+
+        mockMvc.perform(get("/dashboard/api/sessions/timeline"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].deviceId").value("kauf-01"))
+                .andExpect(jsonPath("$[0].start").value(start.toEpochMilli()))
+                .andExpect(jsonPath("$[0].end").value(end.toEpochMilli()))
+                .andExpect(jsonPath("$[0].energyKwh").value(5.2))
+                .andExpect(jsonPath("$[0].status").value("COMPLETED"));
+    }
 }

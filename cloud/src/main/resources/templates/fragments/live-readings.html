@@ -1,45 +1,114 @@
-<div th:each="device : ${devices}" class="device-card" xmlns:th="http://www.thymeleaf.org">
-    <div class="device-header">
-        <h3 th:text="${device.name != null ? device.name : device.deviceId}">Device</h3>
-        <span th:class="'status-badge ' + (${device.online} ? 'online' : 'offline')"
-              th:text="${device.online} ? 'Online' : 'Offline'">Status</span>
+<th:block th:each="device : ${devices}" xmlns:th="http://www.thymeleaf.org">
+    <div class="card mb-3">
+        <div class="card-header">
+            <h3 class="card-title d-flex align-items-center gap-2">
+                <i class="ti ti-plug"></i>
+                <span th:text="${device.name != null ? device.name : device.deviceId}">Device</span>
+            </h3>
+            <div class="card-actions">
+                <span th:if="${device.online}" class="badge bg-success">
+                    <span class="status-indicator status-green status-indicator-animated me-1">
+                        <span class="status-indicator-circle"></span>
+                        <span class="status-indicator-circle"></span>
+                        <span class="status-indicator-circle"></span>
+                    </span>
+                    Online
+                </span>
+                <span th:unless="${device.online}" class="badge bg-secondary">Offline</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div th:if="${latestReadings.containsKey(device.deviceId)}"
+                 th:with="reading=${latestReadings.get(device.deviceId)}">
+                <div class="row row-deck row-cards">
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-red text-white avatar"><i class="ti ti-bolt"></i></span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium text-secondary">Wattage</div>
+                                        <div class="h1 mb-0" th:text="${reading.wattage != null ? #numbers.formatDecimal(reading.wattage, 1, 1) + ' W' : '--'}">-- W</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-blue text-white avatar"><i class="ti ti-wave-sine"></i></span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium text-secondary">Voltage</div>
+                                        <div class="h1 mb-0" th:text="${reading.voltage != null ? #numbers.formatDecimal(reading.voltage, 1, 1) + ' V' : '--'}">-- V</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-green text-white avatar"><i class="ti ti-current-location"></i></span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium text-secondary">Amperage</div>
+                                        <div class="h1 mb-0" th:text="${reading.amperage != null ? #numbers.formatDecimal(reading.amperage, 1, 1) + ' A' : '--'}">-- A</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-yellow text-white avatar"><i class="ti ti-battery-charging-2"></i></span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium text-secondary">Total Energy</div>
+                                        <div class="h1 mb-0" th:text="${reading.totalKwh != null ? #numbers.formatDecimal(reading.totalKwh, 1, 3) + ' kWh' : '--'}">-- kWh</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div th:unless="${latestReadings.containsKey(device.deviceId)}" class="text-secondary text-center py-4">
+                <i class="ti ti-database-off mb-2" style="font-size: 2rem;"></i>
+                <p class="mb-0">No telemetry data yet</p>
+            </div>
+        </div>
+        <div class="card-footer d-flex gap-2">
+            <form th:action="@{/dashboard/devices/{id}/power(id=${device.deviceId})}" method="post">
+                <input type="hidden" name="on" value="true"/>
+                <button type="submit" class="btn btn-success">
+                    <i class="ti ti-power me-1"></i>ON
+                </button>
+            </form>
+            <form th:action="@{/dashboard/devices/{id}/power(id=${device.deviceId})}" method="post">
+                <input type="hidden" name="on" value="false"/>
+                <button type="submit" class="btn btn-danger">
+                    <i class="ti ti-power me-1"></i>OFF
+                </button>
+            </form>
+        </div>
     </div>
+</th:block>
 
-    <div th:if="${latestReadings.containsKey(device.deviceId)}"
-         th:with="reading=${latestReadings.get(device.deviceId)}" class="readings-grid">
-        <div class="reading-card">
-            <span class="reading-label">Wattage</span>
-            <span class="reading-value" th:text="${reading.wattage != null ? #numbers.formatDecimal(reading.wattage, 1, 1) + ' W' : '--'}">-- W</span>
-        </div>
-        <div class="reading-card">
-            <span class="reading-label">Voltage</span>
-            <span class="reading-value" th:text="${reading.voltage != null ? #numbers.formatDecimal(reading.voltage, 1, 1) + ' V' : '--'}">-- V</span>
-        </div>
-        <div class="reading-card">
-            <span class="reading-label">Amperage</span>
-            <span class="reading-value" th:text="${reading.amperage != null ? #numbers.formatDecimal(reading.amperage, 1, 1) + ' A' : '--'}">-- A</span>
-        </div>
-        <div class="reading-card">
-            <span class="reading-label">Total Energy</span>
-            <span class="reading-value" th:text="${reading.totalKwh != null ? #numbers.formatDecimal(reading.totalKwh, 1, 3) + ' kWh' : '--'}">-- kWh</span>
-        </div>
+<div th:if="${#lists.isEmpty(devices)}" class="card" xmlns:th="http://www.thymeleaf.org">
+    <div class="empty">
+        <div class="empty-icon"><i class="ti ti-plug-connected-x" style="font-size: 3rem;"></i></div>
+        <p class="empty-title">No devices registered</p>
+        <p class="empty-subtitle text-secondary">Use the API to register a device first.</p>
     </div>
-    <div th:unless="${latestReadings.containsKey(device.deviceId)}" class="no-data">
-        No telemetry data yet
-    </div>
-
-    <div class="device-actions">
-        <form th:action="@{/dashboard/devices/{id}/power(id=${device.deviceId})}" method="post" class="power-form">
-            <input type="hidden" name="on" value="true"/>
-            <button type="submit" class="btn btn-on">ON</button>
-        </form>
-        <form th:action="@{/dashboard/devices/{id}/power(id=${device.deviceId})}" method="post" class="power-form">
-            <input type="hidden" name="on" value="false"/>
-            <button type="submit" class="btn btn-off">OFF</button>
-        </form>
-    </div>
-</div>
-
-<div th:if="${#lists.isEmpty(devices)}" class="no-data" xmlns:th="http://www.thymeleaf.org">
-    No devices registered. Use the API to register a device first.
 </div>

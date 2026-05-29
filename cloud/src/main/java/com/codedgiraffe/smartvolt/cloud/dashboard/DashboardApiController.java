@@ -4,6 +4,9 @@ import com.codedgiraffe.smartvolt.cloud.model.Device;
 import com.codedgiraffe.smartvolt.cloud.model.TelemetryReading;
 import com.codedgiraffe.smartvolt.cloud.repository.TelemetryRepository;
 import com.codedgiraffe.smartvolt.cloud.service.DeviceService;
+import com.codedgiraffe.smartvolt.cloud.session.ChargingSession;
+import com.codedgiraffe.smartvolt.cloud.session.ChargingSessionRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,11 +22,14 @@ public class DashboardApiController {
 
     private final DeviceService deviceService;
     private final TelemetryRepository telemetryRepo;
+    private final ChargingSessionRepository sessionRepo;
 
     public DashboardApiController(DeviceService deviceService,
-                                  TelemetryRepository telemetryRepo) {
+                                  TelemetryRepository telemetryRepo,
+                                  ChargingSessionRepository sessionRepo) {
         this.deviceService = deviceService;
         this.telemetryRepo = telemetryRepo;
+        this.sessionRepo = sessionRepo;
     }
 
     @GetMapping("/live")
@@ -54,5 +60,22 @@ public class DashboardApiController {
                 .toList();
     }
 
+    @GetMapping("/sessions/timeline")
+    @ResponseBody
+    public List<SessionTimelineEntry> sessionTimeline() {
+        return sessionRepo.findAll(Sort.by(Sort.Direction.DESC, "startedAt"))
+                .stream()
+                .map(s -> new SessionTimelineEntry(
+                        s.getDeviceId(),
+                        s.getStartedAt().toEpochMilli(),
+                        s.getEndedAt() != null ? s.getEndedAt().toEpochMilli() : Instant.now().toEpochMilli(),
+                        s.getEnergyUsedKwh(),
+                        s.getStatus().name()))
+                .toList();
+    }
+
     public record HistoryPoint(String timestamp, Double wattage, Double voltage, Double amperage) {}
+
+    public record SessionTimelineEntry(String deviceId, long start, long end,
+                                       Double energyKwh, String status) {}
 }
