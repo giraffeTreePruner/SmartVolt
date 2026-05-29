@@ -40,8 +40,6 @@ esphome/secrets.yaml
 esphome/.esphome/
 
 ### Environment ###
-application-dev.properties
-application-dev.yml
 .env
 .env.*
 *.pem
