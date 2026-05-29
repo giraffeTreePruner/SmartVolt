@@ -39,11 +39,10 @@ time:
 # If your broker supports TLS (port 8883), uncomment certificate_authority
 # and point it to your CA cert (e.g. Let's Encrypt ISRG Root X1).
 mqtt:
-  broker: smartvolt.drewmeyers.com
-  port: 8883
+  broker: !secret mqtt_broker
+  port: 1883
   username: !secret mqtt_username
   password: !secret mqtt_password
-  # certificate_authority: ca.pem
   topic_prefix: smartvolt/devices/${device_name}
   discovery: false
   birth_message:

@@ -18,28 +18,6 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_DB: smartvolt
-          POSTGRES_USER: smartvolt
-          POSTGRES_PASSWORD: pass
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U smartvolt -d smartvolt"
-          --health-interval=5s
-          --health-timeout=3s
-          --health-retries=5
-
-    env:
-        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/smartvolt
-        SPRING_DATASOURCE_USERNAME: smartvolt
-        SPRING_DATASOURCE_PASSWORD: pass
-        SMARTVOLT_API_KEY: ci-test-key
-        DASHBOARD_PASSWORD: ci-test-pass
-
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -54,10 +32,4 @@ jobs:
     - name: Build and Test (shared + cloud)
       run: |
         chmod +x mvnw
-        ./mvnw verify -B -pl shared,cloud -am \
-          -Dspring.profiles.active=ci \
-          -Dspring.datasource.url=$SPRING_DATASOURCE_URL \
-          -Dspring.datasource.username=$SPRING_DATASOURCE_USERNAME \
-          -Dspring.datasource.password=$SPRING_DATASOURCE_PASSWORD \
-          -Dsmartvolt.api.key=$SMARTVOLT_API_KEY \
-          -Dsmartvolt.dashboard.password=$DASHBOARD_PASSWORD
+        ./mvnw verify -B -pl shared,cloud -am
