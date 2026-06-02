@@ -1,6 +1,7 @@
 package com.codedgiraffe.smartvolt.cloud.security;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -83,5 +84,16 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * Prevent Spring Boot from auto-registering ApiKeyFilter as a global servlet filter.
+     * It should only run inside the API security chain (Order 1), not on dashboard requests.
+     */
+    @Bean
+    public FilterRegistrationBean<ApiKeyFilter> apiKeyFilterRegistration(ApiKeyFilter filter) {
+        FilterRegistrationBean<ApiKeyFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
     }
 }
